@@ -767,7 +767,7 @@ async function initCaps() {
 //   meta        — settings, categories, subscriptions, goals, people, IOUs, …
 //   tx-YYYY-MM  — that month's expenses and income (keeps each document small)
 const Sync = {
-  db: null, uid: null, status: 'starting', last: {}, pending: new Map(), writing: new Set(), timer: null,
+  db: null, uid: null, status: 'starting', last: {}, pending: new Map(), writing: new Set(), timer: null, recent: {},
   latestSnap: null, gotFirst: false, readyResolved: false,
   resolveReady() { this.readyResolved = true; },
 
@@ -818,6 +818,16 @@ const Sync = {
   apply(snap) {
     const byId = {};
     for (const d of snap.docs) if (d.exists) byId[d.id] = d.data();
+    // A snapshot can arrive before the cloud reflects writes this device just made.
+    // Until a snapshot confirms each recent write, keep our version of that document
+    // so a stale copy never undoes something the user just added.
+    const now = Date.now();
+    for (const [k, w] of Object.entries(this.recent)) {
+      const remote = byId[k];
+      const confirmed = w.del ? !remote : !!remote && stableJSON(remote) === w.stable;
+      if (confirmed || now - w.at > 120000) { delete this.recent[k]; continue; }
+      if (w.del) delete byId[k]; else byId[k] = w.body;
+    }
     if (!byId.meta) return;
     const next = { ...JSON.parse(JSON.stringify(byId.meta)), expenses: [], income: [] };
     for (const [k, v] of Object.entries(byId)) {
@@ -855,8 +865,8 @@ const Sync = {
       this.pending.delete(k);
       this.writing.add(k);
       try {
-        if (job.del) { await this.ref(k).delete(); delete this.last[k]; }
-        else { await this.ref(k).set(job.body); this.last[k] = job.json; }
+        if (job.del) { await this.ref(k).delete(); delete this.last[k]; this.recent[k] = { del: true, at: Date.now() }; }
+        else { await this.ref(k).set(job.body); this.last[k] = job.json; this.recent[k] = { body: job.body, stable: stableJSON(job.body), at: Date.now() }; }
       } catch (e) {
         failed = true;
         console.warn('Sync write failed', k, e);
@@ -873,6 +883,12 @@ const Sync = {
   },
 };
 
+/** JSON with object keys sorted, so two copies of the same document compare equal. */
+function stableJSON(v) {
+  if (Array.isArray(v)) return '[' + v.map(stableJSON).join(',') + ']';
+  if (v && typeof v === 'object') return '{' + Object.keys(v).filter((k) => v[k] !== undefined).sort().map((k) => JSON.stringify(k) + ':' + stableJSON(v[k])).join(',') + '}';
+  return JSON.stringify(v ?? null);
+}
 function syncPill() {
   const map = {
     starting: ['busy', 'Connecting…'], busy: ['busy', 'Syncing…'], ok: ['ok', 'Synced'],

@@ -30,7 +30,16 @@ A weekly budget tracker. Set a weekly amount, log what you spend, and see where 
 - **No-spend days & achievements:** 22 badges, a logging streak and an under-budget streak.
 - **Reports:** monthly and yearly summaries with category changes and biggest purchases.
 - **Insights:** category donut, weekly and monthly trends, weekday averages, heatmap, top places, tags, payment methods.
-- **Tags, payment methods, refunds, duplicate, undo, search.**
+- **Quick add:** type “coffee 4.50” or “uber 12 yesterday #work” and press Enter. The category is picked from your history or common keywords.
+- **Search & commands:** find any purchase, subscription, goal or friend, or run an action (press `/`).
+- **Today card & month forecast:** today's share of the budget, plus a chart of where the month is heading.
+- **Challenges:** ready-made and custom spending challenges with progress and wins.
+- **Accounts & net worth:** type in your balances (no bank connection) and watch your net worth over time.
+- **Round-up jar:** spare change from rounding purchases up, ready to move into a goal.
+- **Recurring detection:** spots repeat purchases that look like subscriptions.
+- **Weekly recap:** a summary of last week when a new week starts.
+- **Guided setup, help page, hide-amounts privacy mode, bulk select, sorting, accent colors, compact layout, customizable dashboard.**
+- **Tags, payment methods, refunds, duplicate, undo.**
 - **PIN lock** (per device), light and dark themes, JSON backup and restore, CSV export.
 
 ## Development

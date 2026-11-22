@@ -1,5 +1,5 @@
 // Offline cache so the app opens without a connection once installed.
-const CACHE = 'pocketwise-v1';
+const CACHE = 'pocketwise-v2';
 const ASSETS = ['./', './index.html', './styles.css', './app.js', './icon.svg', './manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
